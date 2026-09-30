@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: nipil
+  description: >-
+    Installs mise through distribution extrepo
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+  galaxy_tags:
+    - mise
+    - extrepo
+
+dependencies: []

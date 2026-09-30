@@ -1,0 +1,60 @@
+---
+- name: Vérifier si extrepo est installé
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - -W
+      - -f
+      - ${Status}
+      - "{{ mise_extrepo_package_name }}"
+  register: mise_extrepo_status
+  changed_when: false
+  failed_when: false
+
+- name: Installer extrepo si absent
+  ansible.builtin.apt:
+    name: "{{ mise_extrepo_package_name }}"
+    state: present
+    update_cache: true
+  when: mise_extrepo_status.rc != 0
+
+- name: Activer le dépôt mise si absent
+  ansible.builtin.command:
+    argv:
+      - extrepo
+      - enable
+      - mise
+    creates: "{{ mise_sources_path }}"
+
+- name: Vérifier si le package mise est connu
+  ansible.builtin.command:
+    argv:
+      - apt-cache
+      - show
+      - "{{ mise_package_name }}"
+  register: mise_known
+  changed_when: false
+  failed_when: false
+
+- name: Mettre à jour le cache APT si mise est inconnu
+  ansible.builtin.apt:
+    update_cache: true
+  when: mise_known.rc != 0
+
+- name: Vérifier si mise est installé
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - -W
+      - -f
+      - ${Status}
+      - "{{ mise_package_name }}"
+  register: mise_status
+  changed_when: false
+  failed_when: false
+
+- name: Installer mise si absent
+  ansible.builtin.apt:
+    name: "{{ mise_package_name }}"
+    state: present
+  when: mise_status.rc != 0

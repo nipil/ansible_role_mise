@@ -1,0 +1,59 @@
+# SCHEMA: https://github.com/ansible/molecule/blob/main/src/molecule/data/molecule.json
+# DOC: https://docs.ansible.com/projects/molecule/ansible-native/
+# DOC: https://docs.ansible.com/projects/molecule/configuration/
+---
+# Dependency management (download roles/collections)
+dependency:
+  # galaxy name does not honor env: ... ANSIBLE_COLLECTIONS_PATH still ~/.ansible and other env not defined
+  # shell does not honor env: same default values, no custom environment variable
+  # ANSIBLE_ROLES_PATH is unset (ignored ?)
+  name: shell
+  # produces a warning that "specified path is not in configured configured Ansible collections paths"
+  # IMPORTANT: the path below seem to be hardcoded ones so that scenario actions find them automatically
+  command: >-
+    ansible-galaxy collection install --collections-path molecule/default/collections --requirements-file molecule/requirements.yml
+
+ansible:
+  cfg:
+    defaults:
+      host_key_checking: false
+      verbosity: 1
+      # IMPORTANT : this is a comma-separated value, not a list !
+      # by the way, repeating the default is required, list is not merged
+      vars_plugins_enabled: host_group_vars
+    ssh_connection:
+      pipelining: true
+  env:
+    ANSIBLE_FORCE_COLOR: "1"
+    ANSIBLE_LOAD_CALLBACK_PLUGINS: "1"
+
+  executor:
+    backend: ansible-playbook
+    args:
+      ansible_playbook:
+        - --diff
+        - --force-handlers
+        - --inventory=${MOLECULE_SCENARIO_DIRECTORY}/inventory/
+      ansible_navigator:
+        - --mode stdout
+        - --pull-policy missing
+        - --execution-environment-image ghcr.io/ansible/community-ansible-dev-tools:latest
+
+  playbooks:
+    create: create.yml
+    converge: converge.yml
+    destroy: destroy.yml
+
+scenario:
+  name: default
+  create_sequence:
+    - create
+  test_sequence:
+    - destroy
+    - syntax
+    - create
+    - converge
+    - idempotence
+    - destroy
+  destroy_sequence:
+    - destroy

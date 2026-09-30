@@ -1,0 +1,3 @@
+collections:
+  # for molecule
+  - name: containers.podman

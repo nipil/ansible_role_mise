@@ -1,0 +1,4 @@
+---
+mise_extrepo_package_name: extrepo
+mise_package_name: mise
+mise_sources_path: /etc/apt/sources.list.d/extrepo_mise.sources
